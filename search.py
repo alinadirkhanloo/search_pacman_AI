@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -55,7 +56,6 @@ class SearchProblem:
     def getCostOfActions(self, actions):
         """
          actions: A list of actions to take
-
         This method returns the total cost of a particular sequence of actions.
         The sequence must be composed of legal moves.
         """
@@ -70,7 +70,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -85,34 +86,34 @@ def depthFirstSearch(problem):
     print "Start:", problem.getStartState()
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    (('B','0:A->B',0),[path])
     """
-    q = []
+    """ The structure of nodes --> (('State','Action',Cost),[List Of Actions])"""
+    stack = util.Stack()
     expanded = []
     start = (problem.getStartState(), [])
-    q.append((start,start[1]))
-    while q:
-        node = q.pop()
-        if problem.isGoalState(node[0][0]):
+    stack.push((start, start[1]))
+    while stack:
+        node = stack.pop()
+        if problem.isGoalState(node[0][0]):  # check goal state
             break
         else:
-            successor = problem.getSuccessors(node[0][0])
-            expanded.append(node[0][0])
+            successor = problem.getSuccessors(node[0][0])  # generate successors of state
+            expanded.append(node[0][0])  # adding expanded node to list
             if successor:
                 for n in successor:
-                    if n[0] not in expanded:
-                        ppath=node[1]+[n[1]]
-                        q.append((n,ppath))
-
+                    if n[0] not in expanded:  # check nodes not in expanded list for pushing to the stack
+                        ppath = node[1] + [n[1]]  # generate nodes action(path) with parents action then push to stack
+                        stack.push((n, ppath))
     return node[1]
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
+    """ The structure of nodes --> (('State','Action',Cost),[List Of Actions])"""
     q = []
     expanded = []
     start = (problem.getStartState(), [])
-    q.append((start,start[1]))
+    q.append((start, start[1]))
     while q:
         node = q.pop(0)
         if problem.isGoalState(node[0][0]):
@@ -124,59 +125,34 @@ def breadthFirstSearch(problem):
             if successor:
                 for n in successor:
                     if n[0] not in expanded:
-                        ppath=node[1]+[n[1]]
-                        q.append((n,ppath))
+                        ppath = node[1] + [n[1]]
+                        q.append((n, ppath))
     return node[1]
-
-
-
-
-
-
-
 
 
 def uniformCostSearch(problem):
-    """Search the node of least total cost first.
-    ((),[])"""
+    """Search the node of least total cost first."""
+    """ The structure of nodes --> (('State','Action',Cost),[List Of Actions])"""
+    """ The structure of nodes in q --> ((('State','Action',Cost),[List Of Actions]),cost Of Actions)"""
+
     q = util.PriorityQueue()
     expanded = []
     start = (problem.getStartState(), [])
-    q.push((start, start[1]),problem.getCostOfActions([]))
-
-    while  not q.isEmpty():
-        node=q.pop()
+    q.push((start, start[1]), problem.getCostOfActions([]))
+    while not q.isEmpty():
+        node = q.pop()
         if problem.isGoalState(node[0][0]):
             break
         else:
-            if node[0][0] not in expanded:      # -__-
+            if node[0][0] not in expanded:
                 successor = problem.getSuccessors(node[0][0])
                 expanded.append(node[0][0])
             if successor:
-                # successor.reverse()
                 for n in successor:
-                    if n[0] not in expanded:
-                        ppath = node[1] + [n[1]]
-                        q.push((n, ppath),problem.getCostOfActions(ppath))
+                    ppath = node[1] + [n[1]]
+                    q.push((n, ppath), priority=problem.getCostOfActions(ppath)) #computing cost of actions that is priority of nodes
+                successor = []
     return node[1]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def nullHeuristic(state, problem=None):
@@ -186,10 +162,28 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    q = util.PriorityQueue()
+    expanded = []
+    start = (problem.getStartState(), [])
+    q.push((start, start[1]), problem.getCostOfActions([]))
+    while not q.isEmpty():
+        node = q.pop()
+        if problem.isGoalState(node[0][0]):
+            break
+        else:
+            if node[0][0] not in expanded:
+                successor = problem.getSuccessors(node[0][0])
+                expanded.append(node[0][0])
+            if successor:
+                for n in successor:
+                    ppath = node[1] + [n[1]]
+                    cost = problem.getCostOfActions(ppath) + heuristic(n[0], problem)
+                    q.push((n, ppath), priority=cost)
+                successor = []
+    return node[1]
 
 
 # Abbreviations
@@ -197,4 +191,3 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
-
